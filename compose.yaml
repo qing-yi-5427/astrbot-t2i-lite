@@ -1,0 +1,24 @@
+services:
+  t2i-lite:
+    build: .
+    image: astrbot-t2i-lite:1.4.1-aside-label
+    container_name: astrbot-t2i-lite
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 512m
+    networks:
+      astrbot_network:
+        aliases:
+          - t2i-lite
+
+networks:
+  astrbot_network:
+    external: true
+    name: astrbot-napcat_astrbot_network

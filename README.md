@@ -21,7 +21,7 @@ docker compose up -d
 
 AstrBot 文转图地址：`http://t2i-lite:8000/text2img`；健康检查：`http://t2i-lite:8000/health`。
 
-[回复模型页脚插件](https://github.com/qing-yi-5427/astrbot_plugin_model_footer) 在独立仓库维护，通过 `tmpldata.model_name` 传入本次回复的模型名。该插件不是本 Docker 项目的一部分。
+[回复模型页脚插件](https://github.com/qing-yi-5427/astrbot-plugins/tree/main/plugins/astrbot_plugin_model_footer) 在插件合集仓库维护，通过 `tmpldata.model_name` 传入本次回复的模型名。该插件不是本 Docker 项目的一部分。
 
 ## 支持范围与限制
 

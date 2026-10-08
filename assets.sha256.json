@@ -1,0 +1,11 @@
+{
+  "assets/avatar.webp": "94ef5a5a1f2755b644bc98d8511c0f9fecc3477e781b8cebbff137369d060e79",
+  "fonts/OFL-NotoSerifSC.txt": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
+  "fonts/OFL-NotoSansSC.txt": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
+  "fonts/NotoColorEmoji.ttf": "15671215ab769fdc7162a045d56fd7d7e477c51b04e6b3c761d914d8fdd6cc44",
+  "fonts/NotoSerifSC-wght.ttf": "050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9",
+  "fonts/OFL-NotoColorEmoji.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+  "fonts/NotoSansSC-wght.ttf": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+  "wheels/mistune-3.1.4-py3-none-any.whl": "93691da911e5d9d2e23bc54472892aff676df27a75274962ff9edc210364266d",
+  "wheels/pillow-11.3.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "67172f2944ebba3d4a7b54f2e95c786a3a50c21b88456329314caaa28cda70f6"
+}

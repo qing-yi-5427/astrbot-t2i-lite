@@ -4,19 +4,15 @@
 
 ## 同步状态（2026-10-08）
 
-本仓库是本地开发文件的源码快照，对应本地记录的 `1.4.1-aside-label`。尚未连接 NAS 核对当前运行版本，当前快照不能直接完整构建：原 Dockerfile 引用的以下资源不在本地，需从实际部署目录补齐后验证。
+已从 NAS 当前运行的 `astrbot-t2i-lite:1.4.1-aside-label` 部署目录补齐源码、依赖、字体及许可、默认头像和离线 wheel。服务入口、Markdown 转换器和 Typst 样式与运行容器逐文件 SHA-256 一致。
 
-- `requirements.txt`
-- `wheels/` 中的离线 Python 依赖
-- `fonts/NotoSansSC-wght.ttf`、`fonts/NotoSerifSC-wght.ttf`
-- `fonts/OFL-NotoSansSC.txt`、`fonts/OFL-NotoSerifSC.txt`
-- `assets/avatar.webp`
+完整 Dockerfile 已在 NAS 构建成功，验证镜像与生产容器分开；新镜像中 46 项转换、服务及实际渲染测试全部通过（包括 Emoji 和样式像素检查）。二进制资源校验值记录在 `assets.sha256.json`。离线 wheel 对应 Linux x86_64 / Python 3.12；目前 Compose 应在该架构运行。首次构建仍需拉取 Dockerfile 的基础镜像，或提前在本机缓存这些镜像。
 
-已包含 Noto Color Emoji 字体及其 OFL 许可。没有上传运行配置、聊天数据或部署备份。仓库保持私有；不要把本次源码上传理解为已重新部署或已通过 Docker 构建。
+仓库保持私有，不包含聊天数据、密钥或部署备份。
 
 ## 部署接口
 
-原 Compose 使用外部网络 `astrbot-napcat_astrbot_network`，容器别名为 `t2i-lite`，未发布宿主机端口。使用前根据自己的 AstrBot 网络调整 Compose。补齐以上文件后，可在本目录运行：
+原 Compose 使用外部网络 `astrbot-napcat_astrbot_network`，容器别名为 `t2i-lite`，未发布宿主机端口。使用前根据自己的 AstrBot 网络调整 Compose。可在本目录运行：
 
 ```sh
 docker compose build
@@ -35,4 +31,10 @@ AstrBot 文转图地址：`http://t2i-lite:8000/text2img`；健康检查：`http
 
 ## 测试
 
-`tests/test_markdown_typst.py` 检查转换，`tests/test_service.py` 检查服务逻辑，`tests/test_rendering.py` 需要实际 Typst、中文字体及头像资源。完整渲染测试须在补齐构建资源后执行。本次上传尚未验证容器构建及完整渲染。
+`tests/test_markdown_typst.py` 检查转换，`tests/test_service.py` 检查服务逻辑，`tests/test_rendering.py` 需要实际 Typst、中文字体及头像资源。使用下面的命令对构建后的镜像运行测试（网络关闭，不会访问模型或聊天平台）：
+
+```sh
+docker run --rm --network none --read-only --tmpfs /tmp:size=128m,mode=1777 \
+  -e PYTHONPATH=/app -v "$PWD/tests:/tests:ro" --entrypoint python \
+  astrbot-t2i-lite:1.4.1-aside-label -m unittest discover -s /tests -p 'test_*.py'
+```

@@ -7,5 +7,13 @@
   "fonts/OFL-NotoColorEmoji.txt": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
   "fonts/NotoSansSC-wght.ttf": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
   "wheels/mistune-3.1.4-py3-none-any.whl": "93691da911e5d9d2e23bc54472892aff676df27a75274962ff9edc210364266d",
-  "wheels/pillow-11.3.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "67172f2944ebba3d4a7b54f2e95c786a3a50c21b88456329314caaa28cda70f6"
+  "wheels/pillow-11.3.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "67172f2944ebba3d4a7b54f2e95c786a3a50c21b88456329314caaa28cda70f6",
+  "assets/themes/miku.webp": "28c20a4b44fa2dacf46a0584df4baa23def5e003310168d02e32854c46926525",
+  "assets/themes/rio.webp": "61ce9b0d12269732f47c4b021473651099309bdb5ad48a082d93f1ff2f9f4b25",
+  "assets/themes/starrail.webp": "3aff5568183d5e08b5b79d8fb851458ae8fb908649622e8a06fd9ecacc8df2d0",
+  "assets/themes/genshin.webp": "e0ddf74584b136beb717955a905dd03b3cac121b32d66d156ce5b797e89efcf2",
+  "assets/themes/zzz.webp": "06b0dccbd3a350583588fa9fb5eb20c3eb6f76c13204cab46be231d904dbe6bc",
+  "fonts/OFL-SourceHanSansSC.txt": "fcac737e761ec63dbfbdce11030a1780161920d80315edba9c8beff1c2bac5a2",
+  "fonts/SourceHanSansSC-Regular.otf": "f1d8611151880c6c336aabeac4640ef434fa13cbfbf1ffe82d0a71b2a5637256",
+  "fonts/SourceHanSansSC-Bold.otf": "df2b90f5bcc6d01dfc964cec5f6d535d6b6aebd26ed7fd79a9c1b3f2112fcb6b"
 }

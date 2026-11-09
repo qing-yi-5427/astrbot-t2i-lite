@@ -10,6 +10,9 @@ from pathlib import Path
 import mistune
 from mistune.plugins.table import table_in_quote
 
+from themes import normalize_style
+from theme_package import THEME_PRELUDE, ThemePackage
+
 
 _MARKDOWN = mistune.create_markdown(
     renderer="ast", plugins=["table", table_in_quote, "strikethrough", "task_lists", "url"]
@@ -107,7 +110,7 @@ def _inline(nodes: list[dict], dark: bool = False) -> str:
             parts.append(
                 "#box(fill: accentsoft, radius: 2pt, "
                 f"inset: (x: 3pt, y: 1pt))[#text({_literal(raw)}, "
-                f"font: (\"DejaVu Sans Mono\", \"Noto Sans SC\", \"Noto Color Emoji\"), size: 10pt, fill: accentdeep)]"
+                f"font: (\"DejaVu Sans Mono\", \"Source Han Sans SC\", \"Noto Color Emoji\"), size: 10pt, fill: accentdeep)]"
             )
         elif kind in {"link", "auto_link"}:
             label = _inline(children, dark) or f"#text({_literal(node.get('attrs', {}).get('url', ''))})"
@@ -217,7 +220,7 @@ def _list(node: dict, depth: int = 0, dark: bool = False, quote_depth: int = 0, 
     return _block("\n".join(rows), 7, 7)
 
 
-def _bot_aside(nodes: list[dict], available_width: float = 290) -> str:
+def _bot_aside(nodes: list[dict], available_width: float = 290, label: str = "AMADEUS / 个人旁白") -> str:
     """The legacy five-space intro is bot commentary, not a Markdown quote."""
     body = _render_nodes(nodes, dark=True, available_width=available_width - 24)
     return _block(
@@ -225,7 +228,7 @@ def _bot_aside(nodes: list[dict], available_width: float = 290) -> str:
         '#let accent = asideaccent\n'
         '#set text(size: 11pt, fill: asideink)\n'
         '#set par(first-line-indent: 0pt, leading: 0.85em, justify: false, linebreaks: "simple")\n'
-        + _block('#text("AMADEUS / 个人旁白", size: 8pt, fill: asidelabel, weight: "bold")', 0, 6)
+        + _block(f'#text({_style_literal(label)}, size: 8pt, fill: asidelabel, weight: "bold")', 0, 6)
         + body + ']', 0, 15,
     )
 
@@ -284,14 +287,14 @@ def _render_nodes(nodes: list[dict], dark: bool = False, quote_depth: int = 0, a
             color = "asideink" if dark else "quoteink" if quote_depth else "ink"
             out.append(
                 _block(
-                    label + f"#text(font: (\"Noto Sans SC\", \"Noto Sans CJK SC\", \"Noto Color Emoji\"), size: {size}pt, "
+                    label + f"#text(font: (\"Source Han Sans SC\", \"Noto Sans CJK SC\", \"Noto Color Emoji\"), size: {size}pt, "
                     f"weight: \"bold\", fill: {color})[{_inline(_children(node), dark)}]",
                     above,
                     8,
                 )
             )
         elif kind == "dark_quote":
-            out.append(_bot_aside(_children(node), available_width))
+            out.append(_bot_aside(_children(node), available_width, node.get("aside_label", "AMADEUS / 个人旁白")))
         elif kind == "block_quote":
             out.append(_quote(_children(node), quote_depth, available_width))
         elif kind == "block_code":
@@ -314,7 +317,7 @@ def _render_nodes(nodes: list[dict], dark: bool = False, quote_depth: int = 0, a
                 _block(
                     '#block(width: 100%, fill: codebg, radius: 5pt, clip: true)['
                     + header + '#block(width: 100%, inset: (x: 11pt, y: 11pt))['
-                    '#text(font: ("DejaVu Sans Mono", "Noto Sans SC", "Noto Color Emoji"), size: 9.5pt, '
+                    '#text(font: ("DejaVu Sans Mono", "Source Han Sans SC", "Noto Color Emoji"), size: 9.5pt, '
                     f"fill: codeink)[#raw({_literal(code)}, block: true, theme: none)]"
                     "]]",
                     10,
@@ -350,8 +353,31 @@ def _wrap_code_line(line: str, limit: int = 46) -> str:
     return "\n".join(parts)
 
 
-def to_typst(markdown: str, version: str = "", model_name: str = "", *, legacy_reply_prefix: bool = False) -> str:
-    blocks = _render_nodes(_parse_markdown(markdown, legacy_reply_prefix))
+def _style_literal(value: str) -> str:
+    """Typst strings, including C0 controls which JSON spells differently."""
+    escapes = {'"': '\\"', '\\': '\\\\', '\n': '\\n', '\r': '\\r', '\t': '\\t'}
+    return '"' + ''.join(
+        escapes.get(char, f'\\u{{{ord(char):x}}}' if ord(char) < 32 or char in {'\u2028', '\u2029'} else char)
+        for char in value
+    ) + '"'
+
+
+# Only these trusted files can be loaded. Never interpolate a user's template
+# value into a path, even after normalization.
+_STYLE_TEMPLATES = {
+    name: (Path(__file__).parent / "templates" / f"{name}.typ").read_text(encoding="utf-8")
+    for name in ("codex", "miku", "genshin", "starrail", "zzz", "rio")
+}
+
+
+def to_typst(markdown: str, version: str = "", model_name: str = "", *, legacy_reply_prefix: bool = False, style: dict | None = None, theme: ThemePackage | None = None) -> str:
+    selected = normalize_style(style, theme)
+    nodes = _parse_markdown(markdown, legacy_reply_prefix)
+    if selected["template"] != "codex" or selected["brand_name"] != "Amadeus":
+        for node in nodes:
+            if node.get("type") == "dark_quote":
+                node["aside_label"] = f'{selected["brand_name"]} / 个人旁白'
+    blocks = _render_nodes(nodes)
     if not blocks:
         blocks = _block('#text(fill: muted)[暂时没有可显示的内容]')
     # Model metadata is data, never executable Typst markup. Replace template
@@ -359,4 +385,18 @@ def to_typst(markdown: str, version: str = "", model_name: str = "", *, legacy_r
     model = " ".join(model_name.split())[:160] if isinstance(model_name, str) else ""
     footer = f"回复模型：{model}" if model else "AMADEUS  ·  POWERED BY ASTRBOT"
     values = {"VERSION": _literal(version[:32]), "FOOTER": _literal(footer), "CONTENT": blocks}
-    return re.sub(r"\{\{(VERSION|FOOTER|CONTENT)\}\}", lambda match: values[match[1]], _TEMPLATE)
+    if theme is None and selected == normalize_style(None):
+        # Preserve the original source byte-for-byte, including all whitespace:
+        # this branch also guarantees unchanged default pixel output.
+        return re.sub(r"\{\{(VERSION|FOOTER|CONTENT)\}\}", lambda match: values[match[1]], _TEMPLATE)
+    if not model and (selected["brand_name"], selected["subtitle"]) != ("Amadeus", "powered by Astrbot"):
+        footer = f'{selected["brand_name"]}  ·  {selected["subtitle"]}'
+    values.update({
+        "BRAND": _style_literal(selected["brand_name"]),
+        "SUBTITLE": _style_literal(selected["subtitle"]),
+        "SHOW_AVATAR": "true" if selected["show_avatar"] else "false",
+        "FOOTER": _style_literal(footer),
+        "SHOW_FOOTER": "true" if selected["show_footer"] else "false",
+    })
+    template = THEME_PRELUDE + theme.source if theme is not None else _STYLE_TEMPLATES[selected["template"]]
+    return re.sub(r"\{\{(VERSION|FOOTER|CONTENT|BRAND|SUBTITLE|SHOW_AVATAR|SHOW_FOOTER)\}\}", lambda match: values[match[1]], template)

@@ -1,7 +1,7 @@
 services:
   t2i-lite:
     build: .
-    image: astrbot-t2i-lite:1.4.1-aside-label
+    image: astrbot-t2i-lite:2.1.0-themes
     container_name: astrbot-t2i-lite
     restart: unless-stopped
     read_only: true

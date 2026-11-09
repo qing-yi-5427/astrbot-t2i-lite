@@ -21,27 +21,28 @@
 #let tableheadbg = rgb("#e1edf9")
 
 #set page(width: 360pt, height: auto, margin: (x: 14pt, y: 17pt), fill: canvas)
-#set text(font: ("Noto Sans SC", "Noto Sans CJK SC", "Noto Color Emoji"), size: 12pt, fill: ink)
+#set text(font: ("Source Han Sans SC", "Noto Sans CJK SC", "Noto Color Emoji"), size: 12pt, fill: ink)
 #set par(leading: 0.65em, spacing: 0pt)
 
 #block(width: 100%, fill: paper, radius: 8pt, inset: 0pt, stroke: 0.5pt + linecolor)[
-  #block(width: 100%, height: 3pt, fill: accent)
-  #block(width: 100%, inset: (x: 19pt, y: 14pt))[
-    #grid(columns: (1fr, auto), column-gutter: 8pt,
+  #block(width: 100%, height: 2pt, fill: accent)
+  #block(width: 100%, inset: (x: 19pt, y: 7pt))[
+    #grid(columns: (1fr, auto), column-gutter: 8pt, align: horizon,
       [
-        #grid(columns: (29pt, 1fr), column-gutter: 8.5pt,
-          [#box(width: 29pt, height: 29pt, radius: 50%, clip: true, stroke: 1.5pt + accent, inset: 0pt)[
-            #image("avatar.webp", width: 29pt, height: 29pt, fit: "cover")
+        #grid(columns: (26pt, 1fr), column-gutter: 8pt, align: horizon,
+          [#box(width: 26pt, height: 26pt, radius: 50%, clip: true, stroke: 1.3pt + accent, inset: 0pt)[
+            #image("avatar.webp", width: 26pt, height: 26pt, fit: "cover")
           ]],
           [
-            #text(size: 14pt, weight: "bold", fill: ink)[Amadeus]
-            #linebreak()
-            #text(size: 9pt, fill: inksoft)[powered by Astrbot]
+            #stack(dir: ttb, spacing: 4pt,
+              [#text(size: 13.5pt, weight: "bold", fill: ink)[Amadeus]],
+              [#text(size: 8pt, fill: inksoft)[powered by Astrbot]],
+            )
           ]
         )
       ],
-      [#box(fill: accentsoft, radius: 6pt, inset: (x: 7pt, y: 4pt))[
-        #text({{VERSION}}, size: 8pt, weight: "bold", fill: accentdeep)
+      [#box(fill: accentsoft, radius: 5pt, inset: (x: 6pt, y: 3pt))[
+        #text({{VERSION}}, size: 7.2pt, weight: "bold", fill: accentdeep)
       ]]
     )
   ]

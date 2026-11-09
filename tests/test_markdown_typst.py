@@ -79,9 +79,9 @@ class CheckboxAndEmojiTests(unittest.TestCase):
 
     def test_emoji_font_fallback_is_used_in_headings_quotes_and_code(self):
         result = to_typst('# 📡 未来道具研究所\n\n正文 🧪 🍮\n\n> 引用 📡\n\n`📡`\n\n```\n📡\n```')
-        self.assertIn('("Noto Sans SC", "Noto Sans CJK SC", "Noto Color Emoji")', result)
+        self.assertIn('("Source Han Sans SC", "Noto Sans CJK SC", "Noto Color Emoji")', result)
         self.assertIn('size: 20pt', result)
-        self.assertIn('("DejaVu Sans Mono", "Noto Sans SC", "Noto Color Emoji")', result)
+        self.assertIn('("DejaVu Sans Mono", "Source Han Sans SC", "Noto Color Emoji")', result)
         self.assertIn('text("📡 未来道具研究所")', result)
         self.assertIn('回复模型：model', to_typst('☑ 状态 📡', model_name='model'))
 

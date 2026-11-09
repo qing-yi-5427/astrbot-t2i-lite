@@ -10,13 +10,21 @@ class QuoteCompileTests(unittest.TestCase):
         data, _ = _compile_image('     **正文重点保持蓝色**，其他正文保持白色。', 'v4.28.2', 'png', 85, legacy_reply_prefix=True)
         with Image.open(io.BytesIO(data)) as image:
             pixels = image.convert('RGB').load()
+            # Locate the actual aside rather than assuming one font's baseline.
+            background = [(x, y) for x in range(image.width) for y in range(image.height)
+                          if pixels[x, y] == (20, 46, 70)]
+            self.assertTrue(background)
+            left = min(x for x, _ in background)
+            right = max(x for x, _ in background) + 1
+            top = min(y for _, y in background)
+            bottom = max(y for _, y in background) + 1
             gold = sum(
-                1 for x in range(90, 400) for y in range(206, 235)
+                1 for x in range(left, right) for y in range(top, bottom)
                 if pixels[x, y][0] > pixels[x, y][1] + 15
                 and pixels[x, y][1] > pixels[x, y][2] + 25
             )
             blue = sum(
-                1 for x in range(90, 640) for y in range(235, 290)
+                1 for x in range(left, right) for y in range(top, bottom)
                 if pixels[x, y][1] > pixels[x, y][0] + 30
                 and pixels[x, y][2] > pixels[x, y][0] + 30
             )

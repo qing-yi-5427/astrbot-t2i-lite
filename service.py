@@ -26,6 +26,7 @@ from markdown_typst import to_typst
 from themes import TEMPLATE_CATALOG, THEME_AVATAR_FILES, normalize_style
 from theme_package import ThemePackage, VALIDATION_MARKDOWN, parse_theme_package
 from group_report import adapt_group_report
+from report_layout import StructuredReport, render_report
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -114,7 +115,7 @@ def _default_avatar_path(template_id: str) -> Path:
     return assets / "themes" / filename
 
 
-def _compile_image(text: str, version: str, output_type: str, quality: int, avatar: bytes | None = None, model_name: str = "", *, legacy_reply_prefix: bool = False, style: dict | None = None, theme: ThemePackage | None = None) -> tuple[bytes, str]:
+def _compile_image(text: str, version: str, output_type: str, quality: int, avatar: bytes | None = None, model_name: str = "", *, legacy_reply_prefix: bool = False, style: dict | None = None, theme: ThemePackage | None = None, report: StructuredReport | None = None) -> tuple[bytes, str]:
     selected = normalize_style(style, theme)
     kwargs = {"legacy_reply_prefix": legacy_reply_prefix}
     if style is not None:
@@ -125,6 +126,8 @@ def _compile_image(text: str, version: str, output_type: str, quality: int, avat
         if avatar is None:
             selected["show_avatar"] = False
         kwargs.update(style=selected, theme=theme)
+    if report is not None:
+        kwargs.update(rendered_body=render_report(report), footer_text=report.footer)
     source = to_typst(text, version, model_name, **kwargs)
     with tempfile.TemporaryDirectory(prefix="t2i-") as temp_dir:
         input_path = Path(temp_dir) / "render.typ"
@@ -200,6 +203,13 @@ def _render(payload: dict) -> tuple[bytes, str]:
     if not isinstance(data, dict):
         raise RenderError("缺少 tmpldata")
     text = data.get("text")
+    report_data = None
+    if "t2i_report" in data:
+        try:
+            report_data = StructuredReport.parse(data["t2i_report"])
+        except (ValueError, TypeError) as error:
+            raise RenderError(str(error)) from error
+        text = ""
     template = payload.get("tmpl", "")
     if not isinstance(template, str):
         raise RenderError("模板格式无效")
@@ -235,7 +245,7 @@ def _render(payload: dict) -> tuple[bytes, str]:
     # legacy HTML avatars must not override those defaults.
     # AstrBot's active Codex template carries this stable brand marker.
     legacy = '<div class="brand-name">Amadeus</div>' in template
-    local = isinstance(text, str) and (legacy or explicit_style)
+    local = report_data is not None or (isinstance(text, str) and (legacy or explicit_style))
     if explicit_style and not isinstance(text, str):
         raise RenderError("样式渲染需要字符串正文 text")
     if not local and not explicit_style:
@@ -277,6 +287,8 @@ def _render(payload: dict) -> tuple[bytes, str]:
         kwargs["style"] = style
     if theme is not None:
         kwargs["theme"] = theme
+    if report_data is not None:
+        kwargs["report"] = report_data
     return _compile_image(text, version, output_type, quality, avatar, model_name, **kwargs)
 
 
@@ -309,10 +321,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path in {"/health", "/text2img/health"}:
-            self._json(200, {"status": "ok", "engine": "typst", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "service_version": "2.2.0-reports"})
+            self._json(200, {"status": "ok", "engine": "typst", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "report_style_protocol": 1, "service_version": "2.3.0-themed-reports"})
             return
         if self.path in {"/templates", "/text2img/templates"}:
-            self._json(200, {"templates": TEMPLATE_CATALOG, "default": "codex", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "service_version": "2.2.0-reports"})
+            self._json(200, {"templates": TEMPLATE_CATALOG, "default": "codex", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "report_style_protocol": 1, "service_version": "2.3.0-themed-reports"})
             return
         prefix = "/text2img/data/"
         if self.path.startswith(prefix):

@@ -142,7 +142,7 @@ class HttpStyleProtocolTests(unittest.TestCase):
             status, headers, body = self.request("GET", route)
             self.assertEqual(status, 200)
             self.assertIn("AstrBotT2ILite/2.0", headers["Server"])
-            self.assertEqual(json.loads(body), {"status": "ok", "engine": "typst", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "service_version": "2.2.0-reports"})
+            self.assertEqual(json.loads(body), {"status": "ok", "engine": "typst", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "report_style_protocol": 1, "service_version": "2.3.0-themed-reports"})
 
     def test_catalog_routes_have_six_safe_named_defaults(self):
         for route in ("/templates", "/text2img/templates"):
@@ -150,7 +150,7 @@ class HttpStyleProtocolTests(unittest.TestCase):
             self.assertEqual(status, 200)
             self.assertIn("application/json", headers["Content-Type"])
             result = json.loads(body)
-            self.assertEqual(result, {"templates": TEMPLATE_CATALOG, "default": "codex", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "service_version": "2.2.0-reports"})
+            self.assertEqual(result, {"templates": TEMPLATE_CATALOG, "default": "codex", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "report_style_protocol": 1, "service_version": "2.3.0-themed-reports"})
             self.assertEqual(tuple(item["id"] for item in result["templates"]), IDS)
             for item in result["templates"]:
                 self.assertTrue(item["name"])

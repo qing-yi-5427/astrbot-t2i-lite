@@ -2,6 +2,16 @@
 
 独立 Docker 项目，使用 Typst 排版、Pillow 编码，不启动浏览器。兼容 AstrBot 文转图请求，支持 Markdown、中文、Emoji、代码、表格、任务列表和模型页脚。
 
+## 2.3.0-themed-reports：报告与会话主题一致
+
+配合主题插件 v1.3.0，群分析报告使用当前群的 T2I/Git 主题。原神、星铁、初音等主题的页头、角色头像、页面、字体与配色直接复用；报告主体改为统计卡、活动图、话题卡、双栏群友画像、引用金句及质量点评卡，替代 2.2.0 的扁平 HTML 重排。正文为 720px 参考主题宽度，外部 Git 主题可自行指定宽度。
+
+报告中的昵称在参与者、正文提及、画像与金句署名中显示为主题色标签，支持自然换行。按已显示的参与者和准备好的 `user-capsule` 标记识别，不补回隐藏身份；短英文 ID 不匹配其他英文单词的子串。昵称仍按普通字符串转义，不能插入 Typst 指令。
+
+请求在 `tmpldata.t2i_report` 提供 `schema: 1` 的已准备报告数据（summary/hours/topics/people/quotes/quality），同时使用已有的 `t2i_style` 和可选 `t2i_theme` 选择主题。数据由主题插件从原报告的可见模板参数提取，保留脱敏与显示数量，不额外发起模型请求；服务检查类型、数量和文字上限，所有字符串都按数据转义，不作为 Typst 指令执行。
+
+普通回复继续使用 Markdown 渲染；结构化报告在同一个主题的 `{{CONTENT}}` 位置插入报告布局，并用报告日期页脚代替回复模型名。原 HTML 仍作为旧客户端的兼容路径，但新主题联动不依赖它的 CSS/装饰或外部资源。健康检查增加 `report_style_protocol: 1`，原三个协议字段均继续为 1。镜像为 `astrbot-t2i-lite:2.3.0-themed-reports`。
+
 ## 2.2.0-reports：群分析 HTML 本地适配
 
 支持 `astrbot_plugin_qq_group_daily_analysis` 已完成渲染的报告 HTML。该插件的图片请求为 `tmpl=<完整 HTML>`、`tmpldata={}`；旧服务无法从空数据中取出 Markdown，因而转交远端 HTML 服务，远端失败时群分析就回退成文本合并转发。本版在本地识别该报告并提取语义内容，交给 Typst/Pillow 生成 PNG/JPEG，不依赖远端服务。

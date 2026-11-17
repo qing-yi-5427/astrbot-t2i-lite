@@ -370,26 +370,28 @@ _STYLE_TEMPLATES = {
 }
 
 
-def to_typst(markdown: str, version: str = "", model_name: str = "", *, legacy_reply_prefix: bool = False, style: dict | None = None, theme: ThemePackage | None = None) -> str:
+def to_typst(markdown: str, version: str = "", model_name: str = "", *, legacy_reply_prefix: bool = False, style: dict | None = None, theme: ThemePackage | None = None, rendered_body: str | None = None, footer_text: str | None = None) -> str:
     selected = normalize_style(style, theme)
     nodes = _parse_markdown(markdown, legacy_reply_prefix)
     if selected["template"] != "codex" or selected["brand_name"] != "Amadeus":
         for node in nodes:
             if node.get("type") == "dark_quote":
                 node["aside_label"] = f'{selected["brand_name"]} / 个人旁白'
-    blocks = _render_nodes(nodes)
+    blocks = _render_nodes(nodes) if rendered_body is None else rendered_body
     if not blocks:
         blocks = _block('#text(fill: muted)[暂时没有可显示的内容]')
     # Model metadata is data, never executable Typst markup. Replace template
     # tokens in one pass so token-looking user text cannot alter other fields.
     model = " ".join(model_name.split())[:160] if isinstance(model_name, str) else ""
     footer = f"回复模型：{model}" if model else "AMADEUS  ·  POWERED BY ASTRBOT"
+    if footer_text is not None:
+        footer = footer_text
     values = {"VERSION": _literal(version[:32]), "FOOTER": _literal(footer), "CONTENT": blocks}
     if theme is None and selected == normalize_style(None):
         # Preserve the original source byte-for-byte, including all whitespace:
         # this branch also guarantees unchanged default pixel output.
         return re.sub(r"\{\{(VERSION|FOOTER|CONTENT)\}\}", lambda match: values[match[1]], _TEMPLATE)
-    if not model and (selected["brand_name"], selected["subtitle"]) != ("Amadeus", "powered by Astrbot"):
+    if footer_text is None and not model and (selected["brand_name"], selected["subtitle"]) != ("Amadeus", "powered by Astrbot"):
         footer = f'{selected["brand_name"]}  ·  {selected["subtitle"]}'
     values.update({
         "BRAND": _style_literal(selected["brand_name"]),

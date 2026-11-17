@@ -24,7 +24,7 @@ WORKDIR /app
 COPY requirements.txt ./
 COPY wheels/ /wheels/
 RUN pip install --no-index --find-links=/wheels --no-cache-dir -r requirements.txt
-COPY --chmod=644 service.py markdown_typst.py codex_style.typ themes.py theme_package.py ./
+COPY --chmod=644 service.py markdown_typst.py codex_style.typ themes.py theme_package.py group_report.py ./
 COPY templates/ /app/templates/
 COPY --chmod=644 assets/avatar.webp /app/assets/avatar.webp
 COPY --chmod=644 assets/themes/miku.webp assets/themes/genshin.webp assets/themes/starrail.webp assets/themes/zzz.webp assets/themes/rio.webp assets/themes/SOURCES.md /app/assets/themes/

@@ -2,6 +2,18 @@
 
 独立 Docker 项目，使用 Typst 排版、Pillow 编码，不启动浏览器。兼容 AstrBot 文转图请求，支持 Markdown、中文、Emoji、代码、表格、任务列表和模型页脚。
 
+## 2.2.0-reports：群分析 HTML 本地适配
+
+支持 `astrbot_plugin_qq_group_daily_analysis` 已完成渲染的报告 HTML。该插件的图片请求为 `tmpl=<完整 HTML>`、`tmpldata={}`；旧服务无法从空数据中取出 Markdown，因而转交远端 HTML 服务，远端失败时群分析就回退成文本合并转发。本版在本地识别该报告并提取语义内容，交给 Typst/Pillow 生成 PNG/JPEG，不依赖远端服务。
+
+- 已用群分析插件 v5.0.10 的实际输出验证九套内置模板：BlueArchive、scrapbook、HatsuneMiku、ATRI、simple、hack、retro_futurism、spring_festival、format。
+- 保留报告标题、日期、基础统计、24 小时精确活动数值、话题与参与者、群友画像、金句、质量锐评和报告文字。柱状图由本地重新绘制，缺少图表时仍可渲染文字报告。
+- 统一使用 880px 宽的思源黑体阅读版式。HTML/CSS 的原装饰、主题角色插画、用户头像、JavaScript 和外部图片不会加载或逐像素复刻；这不是通用浏览器引擎。自定义 HTML 模板须保留插件标识和可识别的报告结构，否则继续使用原路由。
+- 返回实际图片 bytes 或兼容的短期缓存地址；不修改群分析插件，保留它现有的图片发送和失败时文本回退逻辑。普通 Codex/Git 主题请求及其他插件模板的路由保持原有行为。
+- 编译仍受 25 秒、25000px 高度、请求体 4MiB 和原 Docker 资源上限约束。内容超限或结构错误明确报错，不悄悄截断分析。
+
+镜像标签为 `astrbot-t2i-lite:2.2.0-reports`。健康检查增加 `report_protocol: 1`，`style_protocol`、`theme_protocol` 继续为 1。下文 2.1.0 为 Git 主题协议说明，2.0.3 为内置参考版式基线。
+
 ## 2.1.0-themes：Git 主题包
 
 配合 [主题与模型页脚插件](https://github.com/qing-yi-5427/astrbot-plugins/tree/main/plugins/astrbot_plugin_t2i_style) v1.2.0，支持由插件从 Git 仓库下载、缓存和试渲染主题，再随当前文转图请求传入。服务继续使用只读 Docker，不需要把 Git 挂进容器、不需要为每次主题修改重建镜像。
@@ -18,7 +30,7 @@
 
 主题是你所选仓库提供的 Typst 代码。编译仍限制在独立临时项目根目录，资源路径不允许逃逸或覆盖编译输出；保持 25 秒编译超时、并发 2、原请求/输出上限及 Docker 资源限制。服务未增加持久写入目录或主题管理凭据。
 
-当前部署镜像标签：`astrbot-t2i-lite:2.1.0-themes`。下面的 2.0.3 说明是内置回退主题的设计基线。
+Git 主题协议从 `astrbot-t2i-lite:2.1.0-themes` 起提供，2.2.0 继续兼容。下面的 2.0.3 说明是内置回退主题的设计基线。
 
 ## 内置六主题与紧凑页头（2.0.3 设计基线）
 

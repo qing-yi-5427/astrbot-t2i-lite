@@ -1,7 +1,7 @@
 services:
   t2i-lite:
     build: .
-    image: astrbot-t2i-lite:2.1.0-themes
+    image: astrbot-t2i-lite:2.2.0-reports
     container_name: astrbot-t2i-lite
     restart: unless-stopped
     read_only: true

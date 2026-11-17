@@ -25,6 +25,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from markdown_typst import to_typst
 from themes import TEMPLATE_CATALOG, THEME_AVATAR_FILES, normalize_style
 from theme_package import ThemePackage, VALIDATION_MARKDOWN, parse_theme_package
+from group_report import adapt_group_report
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -237,6 +238,16 @@ def _render(payload: dict) -> tuple[bytes, str]:
     local = isinstance(text, str) and (legacy or explicit_style)
     if explicit_style and not isinstance(text, str):
         raise RenderError("样式渲染需要字符串正文 text")
+    if not local and not explicit_style:
+        try:
+            report = adapt_group_report(template)
+        except ValueError as error:
+            raise RenderError(str(error)) from error
+        if report is not None:
+            text, theme = report.text, report.theme
+            style = normalize_style({"template": theme.id, "show_avatar": False, "show_footer": False}, theme)
+            local, legacy, avatar = True, False, None
+            LOG.info("rendering group-analysis HTML locally; hours=%d, text_chars=%d", len(report.hourly_counts), len(text))
     if not local:
         try:
             return _proxy_unsupported(payload)
@@ -298,10 +309,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path in {"/health", "/text2img/health"}:
-            self._json(200, {"status": "ok", "engine": "typst", "style_protocol": 1, "theme_protocol": 1, "service_version": "2.1.0-themes"})
+            self._json(200, {"status": "ok", "engine": "typst", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "service_version": "2.2.0-reports"})
             return
         if self.path in {"/templates", "/text2img/templates"}:
-            self._json(200, {"templates": TEMPLATE_CATALOG, "default": "codex", "style_protocol": 1, "theme_protocol": 1, "service_version": "2.1.0-themes"})
+            self._json(200, {"templates": TEMPLATE_CATALOG, "default": "codex", "style_protocol": 1, "theme_protocol": 1, "report_protocol": 1, "service_version": "2.2.0-reports"})
             return
         prefix = "/text2img/data/"
         if self.path.startswith(prefix):
